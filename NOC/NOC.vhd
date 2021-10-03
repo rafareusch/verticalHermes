@@ -148,7 +148,7 @@ architecture NOC of NOC is
 
 begin
 
-
+	
     noc: for i in 0 to NB_ROUTERS-1 generate
            
                 router: entity work.RouterCC

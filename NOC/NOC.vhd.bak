@@ -85,7 +85,7 @@ package body standards is
                         
         end RouterPosition;
 
-
+	-- ALTERAR PARA USAR A PARTE ALTA DO ADDR PARA ARMAZENAR S E T
         function RouterAddress(router, X_ROUTERS: integer) return std_logic_vector is
                 variable pos_x, pos_y   : regquartoflit; 
                 variable addr           : regmetadeflit; 
@@ -165,6 +165,9 @@ begin
 						data_out => data_out(i),
 						credit_i => credit_i(i));                          
    
+
+		
+		
                 ------------------------------------------------------------------------------
                 --- LOCAL PORT CONNECTIONS ----------------------------------------------------
                 ------------------------------------------------------------------------------
@@ -179,6 +182,10 @@ begin
                 credit_i(i)(LOCAL)       <= credit_iLocal(i);
                        
 
+		-- IF ROUTERS ARE AT EDGE
+		-- USE GROUNDED VIAS TO CONNECT UP AND DOWN CHANNELS
+		
+		-- ALTERAR IFS PARA CONTEMPLAR UP DOWN NOS ROUTERS DAS PONTAS
                 ------------------------------------------------------------------------------
                 --- EAST PORT CONNECTIONS ----------------------------------------------------
                 ------------------------------------------------------------------------------

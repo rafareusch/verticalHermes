@@ -35,7 +35,6 @@ architecture topNoC of topNoC is
 begin
 	reset <= '1', '0' after 15 ns;
 
-
     clocks_router: for i in 0 to NB_ROUTERS-1 generate
           clock(i) <= not clock(i) after 10 ns;
 
