@@ -25,7 +25,7 @@ package standards is
     constant TR: integer := 8;
 
     function RouterPosition(router, X_ROUTERS, Y_ROUTERS: integer) return integer;
-    function RouterAddress(router, X_ROUTERS: integer)  return std_logic_vector; 
+    function RouterAddress(router, X_ROUTERS,STACKS,TIERS: integer)  return std_logic_vector; 
 
     type arrayNrot_regflit is array (natural range <>) of regflit;
 
@@ -50,7 +50,7 @@ package body standards is
                 variable pos: integer range 0 to TR;
                 variable line, column: integer;
                 begin
-
+                        
                     column := router mod X_ROUTERS;
                     
                     if router >= (X_ROUTERS*Y_ROUTERS)-X_ROUTERS then --TOP ---------
@@ -86,17 +86,22 @@ package body standards is
         end RouterPosition;
 
 	-- ALTERAR PARA USAR A PARTE ALTA DO ADDR PARA ARMAZENAR S E T
-        function RouterAddress(router, X_ROUTERS: integer) return std_logic_vector is
-                variable pos_x, pos_y   : regquartoflit; 
-                variable addr           : regmetadeflit; 
+        function RouterAddress(router, X_ROUTERS,STACKS,TIERS: integer) return std_logic_vector is
+
+                variable pos_x,pos_y,ls,lt   : regquartoflit; 
+                variable addr           : regflit; 
                 variable aux            : integer;
         begin 
                 aux := (router/X_ROUTERS);
                 pos_x := conv_std_logic_vector((router mod X_ROUTERS),QUARTOFLIT);
                 pos_y := conv_std_logic_vector(aux,QUARTOFLIT); 
+                ls := conv_std_logic_vector(STACKS,QUARTOFLIT);
+                lt :=  conv_std_logic_vector(TIERS,QUARTOFLIT);
                 
-                addr := pos_x & pos_y;
+                addr := ls & lt & pos_x & pos_y;
+
                 return addr;
+
         end RouterAddress;
                
 end standards;
@@ -113,8 +118,13 @@ use work.standards.all;
 -- THE EXTERNAL INTERFACE OF THE NOC ARE THE LOCAL PORTS OF ALL ROUTERS
 --
 entity NOC is
-    generic(   X_ROUTERS: integer := 4;
-    	       Y_ROUTERS: integer := 4 );
+    generic(    X_ROUTERS: integer := 4;
+    	        Y_ROUTERS: integer := 4;
+                TIERS: integer := 2;
+                STACKS: integer := 1
+                
+                );
+
 	port(
 		clock         : in  std_logic_vector( (X_ROUTERS*Y_ROUTERS-1) downto 0);
 		reset         : in  std_logic;
@@ -146,25 +156,34 @@ architecture NOC of NOC is
 
 	type router_position is array (NB_ROUTERS-1 downto 0) of integer range 0 to TR;
 
+        signal NocHeader : std_logic_vector((TAM_FLIT-1) downto METADEFLIT);
+
 begin
 
-	
-    noc: for i in 0 to NB_ROUTERS-1 generate
+        --NocHeader <= conv_std_logic_vector(STACKS,QUARTOFLIT) & conv_std_logic_vector(TIER,QUARTOFLIT);
+                -- NB_ROUTERS = 25
+                -- NB_TIERS
+                -- Pos(NB_TIERS,NB_ROUTERS)
+
+        -- FOR GENERATE FOR EACH TIER
+
+        noc: for i in 0 to NB_ROUTERS-1 generate
            
+
                 router: entity work.RouterCC
-					generic map( address => RouterAddress(i,X_ROUTERS) )
-					port map(
-						clock    => clock(i),
-						reset    => reset,
-						clock_rx => clock_rx(i),
-						rx       => rx(i),
-						data_in  => data_in(i),
-						credit_o => credit_o(i),
-						clock_tx => clock_tx(i),
-						tx       => tx(i),
-						data_out => data_out(i),
-						credit_i => credit_i(i));                          
-   
+                generic map( address =>  RouterAddress(i,X_ROUTERS,STACKS,TIERS))  -- CONCATENAR ENDEREÇO COM LT LS-- adicionar X_ROUTERS, Y_ROUTERS
+                port map(
+                        clock    => clock(i),
+                        reset    => reset,
+                        clock_rx => clock_rx(i),
+                        rx       => rx(i),
+                        data_in  => data_in(i),
+                        credit_o => credit_o(i),
+                        clock_tx => clock_tx(i),
+                        tx       => tx(i),
+                        data_out => data_out(i),
+                        credit_i => credit_i(i));                          
+
 
 		
 		
@@ -186,6 +205,12 @@ begin
 		-- USE GROUNDED VIAS TO CONNECT UP AND DOWN CHANNELS
 		
 		-- ALTERAR IFS PARA CONTEMPLAR UP DOWN NOS ROUTERS DAS PONTAS
+                -- TR (NORTH: UP   EAST: DOWN)
+                -- BR (SOUTH: UP   EAST: DOWN)
+                -- TL (NORTH: UP   WEST: DOWN)
+                -- BL (SOUTH: UP   WEST: DOWN)
+
+
                 ------------------------------------------------------------------------------
                 --- EAST PORT CONNECTIONS ----------------------------------------------------
                 ------------------------------------------------------------------------------

@@ -19,23 +19,23 @@
 --                      -----------------------------------
 --                                    SOUTH
 --
---  As chaves realizam a transferýncia de mensagens entre nýcleos. 
---  A chave possui uma lýgica de controle de chaveamento e 5 portas bidirecionais:
+--  As chaves realizam a transferï¿½ncia de mensagens entre nï¿½cleos. 
+--  A chave possui uma lï¿½gica de controle de chaveamento e 5 portas bidirecionais:
 --  East, West, North, South e Local. Cada porta possui uma fila para o armazenamento 
---  temporýrio de flits. A porta Local estabelece a comunicaýýo entre a chave e seu 
---  nýcleo. As demais portas ligam a chave ýs chaves vizinhas.
---  Os endereýos das chaves sýo compostos pelas coordenadas XY da rede de interconexýo, 
---  onde X ý a posiýýo horizontal e Y a posiýýo vertical. A atribuiýýo de endereýos ýs 
---  chaves ý necessýria para a execuýýo do algoritmo de chaveamento.
---  Os mýdulos principais que compýem a chave sýo: fila, ýrbitro e lýgica de 
+--  temporï¿½rio de flits. A porta Local estabelece a comunicaï¿½ï¿½o entre a chave e seu 
+--  nï¿½cleo. As demais portas ligam a chave ï¿½s chaves vizinhas.
+--  Os endereï¿½os das chaves sï¿½o compostos pelas coordenadas XY da rede de interconexï¿½o, 
+--  onde X ï¿½ a posiï¿½ï¿½o horizontal e Y a posiï¿½ï¿½o vertical. A atribuiï¿½ï¿½o de endereï¿½os ï¿½s 
+--  chaves ï¿½ necessï¿½ria para a execuï¿½ï¿½o do algoritmo de chaveamento.
+--  Os mï¿½dulos principais que compï¿½em a chave sï¿½o: fila, ï¿½rbitro e lï¿½gica de 
 --  chaveamento implementada pelo controle_mux. Cada uma das filas da chave (E, W, N, 
---  S e L), ao receber um novo pacote requisita chaveamento ao ýrbitro. O ýrbitro 
---  seleciona a requisiýýo de maior prioridade, quando existem requisiýýes simultýneas, 
---  e encaminha o pedido de chaveamento ý lýgica de chaveamento. A lýgica de 
---  chaveamento verifica se ý possývel atender ý solicitaýýo. Sendo possývel, a conexýo
---  ý estabelecida e o ýrbitro ý informado. Por sua vez, o ýrbitro informa a fila que 
---  comeýa a enviar os flits armazenados. Quando todos os flits do pacote foram 
---  enviados, a conexýo ý concluýda pela sinalizaýýo, por parte da fila, atravýs do 
+--  S e L), ao receber um novo pacote requisita chaveamento ao ï¿½rbitro. O ï¿½rbitro 
+--  seleciona a requisiï¿½ï¿½o de maior prioridade, quando existem requisiï¿½ï¿½es simultï¿½neas, 
+--  e encaminha o pedido de chaveamento ï¿½ lï¿½gica de chaveamento. A lï¿½gica de 
+--  chaveamento verifica se ï¿½ possï¿½vel atender ï¿½ solicitaï¿½ï¿½o. Sendo possï¿½vel, a conexï¿½o
+--  ï¿½ estabelecida e o ï¿½rbitro ï¿½ informado. Por sua vez, o ï¿½rbitro informa a fila que 
+--  comeï¿½a a enviar os flits armazenados. Quando todos os flits do pacote foram 
+--  enviados, a conexï¿½o ï¿½ concluï¿½da pela sinalizaï¿½ï¿½o, por parte da fila, atravï¿½s do 
 --  sinal sender.
 ---------------------------------------------------------------------------------------
 library IEEE;
@@ -44,7 +44,7 @@ use IEEE.std_logic_unsigned.all;
 use work.HermesPackage.all;
 
 entity RouterCC is
-generic( address: regmetadeflit);
+generic( address: regflit); 
 port(
     clock:     in  std_logic;
     reset:     in  std_logic;
@@ -88,6 +88,7 @@ begin
 
     SwitchControl : Entity work.SwitchControl
     port map(
+        -- ADICIONAR LT, LS, X_ROUTERS, Y_ROUTERS
         clock => clock,
         reset => reset,
         h => h,

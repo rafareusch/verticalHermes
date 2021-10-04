@@ -9,7 +9,7 @@ port(
 	reset :   in  std_logic;
 	h :       in  regNport;
 	ack_h :   out regNport;
-	address : in  regmetadeflit;
+	address : in  regflit;
 	data :    in  arrayNport_regflit;
 	sender :  in  regNport;
 	free :    out regNport;
@@ -31,10 +31,13 @@ signal header : regflit := (others=> '0');
 
 -- sinais do controle
 signal dirx,diry: integer range 0 to (NPORT-1) := 0;
-signal lx,ly,tx,ty,auxX,auxY: regquartoflit := (others=> '0');
+signal lx,ly,tx,ty,lt,ls,tt,ts: regquartoflit := (others=> '0');
 signal auxfree: regNport := (others=> '0');
 signal source:  arrayNport_reg3 := (others=> (others=> '0'));
 signal sender_ant: regNport := (others=> '0');
+
+-- temp
+signal X_ROUTERS,Y_ROUTERS: integer;
 
 begin
 
@@ -78,16 +81,23 @@ begin
 		end case;
 	end process;
 
-
-	-- coming from message
+		
+	
+	ls <= address((TAM_FLIT - 1) downto (METADEFLIT + QUARTOFLIT));
+	lt <= address(((METADEFLIT + QUARTOFLIT-1)) downto METADEFLIT);
 	lx <= address((METADEFLIT - 1) downto QUARTOFLIT);
 	ly <= address((QUARTOFLIT - 1) downto 0);
 
-	tx <= header((METADEFLIT - 1) downto QUARTOFLIT);
-	ty <= header((QUARTOFLIT - 1) downto 0);
+	ts <= header((TAM_FLIT - 1) downto (METADEFLIT+ QUARTOFLIT));
+	tt <= header(((METADEFLIT+ QUARTOFLIT-1)) downto METADEFLIT);
+	tx <= header((METADEFLIT - 1) downto QUARTOFLIT) when (lt = tt or ls = ts);
+	ty <= header((QUARTOFLIT - 1) downto 0) 		when (lt = tt or ls = ts);
 
-	dirx <= WEST when lx > tx else EAST;
-	diry <= NORTH when ly < ty else SOUTH;
+	dirx <= WEST when (lx > tx and (lt = tt and ls = ts)) or (NOT(lx > ((X_ROUTERS-1)-lx)) and (lt /= tt or ls /= ts)) else 
+			EAST when (lt = tt and ls = ts) or (lx > ((X_ROUTERS-1)-lx) and (lt /= tt or ls /= ts));
+
+	diry <= NORTH when (ly < ty and (lt = tt and ls = ts)) or ((ly > ((Y_ROUTERS-1)-ly)) and (lt /= tt or ls /= ts)) else 
+			SOUTH when (lt = tt and ls = ts) or (NOT(ly > ((Y_ROUTERS-1)-ly)) and (lt /= tt or ls /= ts)); 
 
 	process(reset,clock)
 	begin
@@ -97,46 +107,6 @@ begin
 			ES<=PES;
 		end if;
 	end process;
-
-
-
-	function findNearestEdge(lx,ly,xRouters,yRouters) return integer is
-		variable distToEdge: integer;
-		variable auxDist: integer;
-		variable targetEdge : integer; 
-					-- 0: BL
-					-- 1: BR
-					-- 2: TL
-					-- 3: TR
-		begin
-
-			distToEdge = abs(lx-0) + abs(ly-0);
-			targetEdge = 0;
-
-			auxDist = abs(lx-xRouter) + abs(ly-0);
-			if auxDist < distToEdge then
-				distToEdge = auxDist;
-				targetEdge = 1;
-			end if;
-
-			auxDist = abs(lx-0) + abs(ly-yRouter);
-			if auxDist < distToEdge then
-				distToEdge = auxDist;
-				targetEdge = 2;
-			end if;
-
-			auxDist = abs(lx-xRouter) + abs(ly-yRouter);
-			if auxDist < distToEdge then
-				distToEdge = auxDist;
-				targetEdge = 3;
-			end if;
-
-			return targetEdge;
-
-	end findNearestEdge;
-	
-
-
 
 	------------------------------------------------------------------------------------------------------
 	-- PARTE COMBINACIONAL PARA DEFINIR O PR�XIMO ESTADO DA M�QUINA.
@@ -168,78 +138,24 @@ begin
 	process(ES,ask,h,lx,ly,tx,ty,auxfree,dirx,diry)
 	begin
 
-		-- AUXX = TARGET X
-		-- TARGET X,Y = EDGE(X,Y) 
-		-- ARMAZENAR TARGET ORIGINAL
-		-- ALTERAR O TARGET (X,Y)
-		-- QUANDO CHEGAR NO TARGET ALTERADO - RETOMAR TARGET ORIGINAL
-
-		-- Caso não esta no nivel correto ou nao esta no stack correto e o target não é o edge router
-		if ( (lt /= tt or ls /= ts) and NOT( (tx = 0 and ty = 0) or (tx = 0 and ty = Y_ROUTERS-1) or (tx = X_ROUTERS-1 and ty = 0) or (tx = X_ROUTERS-1 and ty = Y_ROUTERS-1)) then
-			
-			targetRouter = findNearestEdge(lx,ly,X_ROUTERS-1,Y_ROUTERS-1); -- FALTA CONVERTER PARA INTEGER lx e ly
-			auxX := tx;
-			auxY := ty;
-			case targetRouter is
-				when 0 => -- BL
-				tx := (others=>'0');
-				ty := (others=>'0');
-				when 1 =>
-				when 2 =>
-				when 3 => -- TR
-			end case;
-		end if;
-
-
-
 		case ES is
 			when S0 => PES <= S1;
 			when S1 => if ask='1' then PES <= S2; else PES <= S1; end if;
 			when S2 => PES <= S3;
-			
-			-- localLevel = localTier -> qual o andar que o controle está atuando
-			-- targetLevel = targetTier -> qual é o andar alvo do pacote
-			 
-			-- if lx = 0 and ly = 0 then
-			-- 	if lx = 0 and ly = yRouters then
-			-- 	if lx = xRouters and ly = 0 then
-			-- 	if lx = xRouters and ly = yRouters then
 
-			-- -- if localLevel /= targetLevel and ls /= ts then GOTO ELEVATOR
-			-- --		if lx,ly = edge(x,y) -- (it is on elevator) 
-			-- --			if localLevel > targetLevel
-			-- --				descer
-			-- --			else
-			-- --				subir
-			-- --		else GOTO ELEVATOR
-			--				quadrante = lowestPath()
-			-- --			if (quadrante 00 and +y axis)
-								-- opcao 1 calcular caminho pra cada edge
-							
-			-- 				andar x--
-			-- 				andar y++
-			-- --			if (quadrante 01 and +x axis)
-			-- --				andar x++
-			-- --				andar y++
-			-- -- 			if (quadrante 10 and -x axis)
-			-- 				andar x--
-			-- 				andar y--
-			-- --			if (quadrante 11 and -y axis)
-			-- 				andar x++
-			-- 				andar y--
-			-- -- 			 
+			when S3 => 
+				
+					if  (lt = tt and ls = ts) then
+						if lx = tx and ly = ty and auxfree(LOCAL)='1' then PES<=S4;
+						elsif lx /= tx and auxfree(dirx)='1' then PES<=S5;
+						elsif lx = tx and ly /= ty and auxfree(diry)='1' then PES<=S6; 
+						else PES<=S1; end if;
+					else
+						if ((lx /= 0 or lx /= X_ROUTERS)) then PES<=S5 ; 
+						elsif ((ly /= 0 or ly /= Y_ROUTERS)) then PES<=S6 ;
+						end if;
+					end if;
 
-			-- --	elsif  localLevel = ts and localLevel = targetLevel 
-			-- --		ROTEAMENTO NORMAL
-			
-
-			
-			-- TX VEM DA MENSAGEM
-			-- LX VEM DO ROUTER
-			when S3 => if lx = tx and ly = ty and auxfree(LOCAL)='1' then PES<=S4; -- condicao de final
-					elsif lx /= tx and auxfree(dirx)='1' then PES<=S5;		-- x nao é igual, anda pelo x
-					elsif lx = tx and ly /= ty and auxfree(diry)='1' then PES<=S6; -- y nao é igual, anda pelo y
-					else PES<=S1; end if;
 			when S4 => PES<=S7;
 			when S5 => PES<=S7;
 			when S6 => PES<=S7;
