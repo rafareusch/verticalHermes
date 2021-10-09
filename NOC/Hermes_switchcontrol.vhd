@@ -150,9 +150,10 @@ begin
 						elsif lx /= tx and auxfree(dirx)='1' then PES<=S5;
 						elsif lx = tx and ly /= ty and auxfree(diry)='1' then PES<=S6; 
 						else PES<=S1; end if;
-					else
-						if ((lx /= 0 or lx /= X_ROUTERS)) then PES<=S5 ; 
-						elsif ((ly /= 0 or ly /= Y_ROUTERS)) then PES<=S6 ;
+
+					else -- it's on the wrong tier or stack -> GOTO elevator
+						if (lx /= 0 and lx /= X_ROUTERS and auxfree(dirx)='1') then PES<=S5 ; -- ride along x axis
+						elsif (ly /= 0 and ly /= Y_ROUTERS and auxfree(diry)) then PES<=S6 ; -- ride along y axis
 						end if;
 					end if;
 
