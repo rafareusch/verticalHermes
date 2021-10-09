@@ -36,8 +36,9 @@ signal auxfree: regNport := (others=> '0');
 signal source:  arrayNport_reg3 := (others=> (others=> '0'));
 signal sender_ant: regNport := (others=> '0');
 
--- temp
-signal X_ROUTERS,Y_ROUTERS: integer;
+-- REMOVE
+signal X_ROUTERS : integer := 3; 
+SIGNAL Y_ROUTERS: integer := 3;
 
 begin
 
@@ -153,7 +154,7 @@ begin
 
 					else -- it's on the wrong tier or stack -> GOTO elevator
 						if (lx /= 0 and lx /= X_ROUTERS and auxfree(dirx)='1') then PES<=S5 ; -- ride along x axis
-						elsif (ly /= 0 and ly /= Y_ROUTERS and auxfree(diry)) then PES<=S6 ; -- ride along y axis
+						elsif (ly /= 0 and ly /= Y_ROUTERS and auxfree(diry)='1') then PES<=S6 ; -- ride along y axis
 						end if;
 					end if;
 

@@ -9,7 +9,7 @@ port(
 	reset :   in  std_logic;
 	h :       in  regNport;
 	ack_h :   out regNport;
-	address : in  regmetadeflit;
+	address : in  regflit;
 	data :    in  arrayNport_regflit;
 	sender :  in  regNport;
 	free :    out regNport;
@@ -83,13 +83,13 @@ begin
 
 		
 	
-	ls <= address((TAM_FLIT - 1) downto (METADEFLIT-1 + QUARTOFLIT-1));
-	lt <= address(((METADEFLIT-1 + QUARTOFLIT-1)) downto METADEFLIT);
+	ls <= address((TAM_FLIT - 1) downto (METADEFLIT + QUARTOFLIT));
+	lt <= address(((METADEFLIT + QUARTOFLIT-1)) downto METADEFLIT);
 	lx <= address((METADEFLIT - 1) downto QUARTOFLIT);
 	ly <= address((QUARTOFLIT - 1) downto 0);
 
-	ts <= header((TAM_FLIT - 1) downto (METADEFLIT-1 + QUARTOFLIT-1));
-	tt <= header(((METADEFLIT-1 + QUARTOFLIT-1)) downto METADEFLIT);
+	ts <= header((TAM_FLIT - 1) downto (METADEFLIT+ QUARTOFLIT));
+	tt <= header(((METADEFLIT+ QUARTOFLIT-1)) downto METADEFLIT);
 	tx <= header((METADEFLIT - 1) downto QUARTOFLIT) when (lt = tt or ls = ts);
 	ty <= header((QUARTOFLIT - 1) downto 0) 		when (lt = tt or ls = ts);
 
@@ -150,9 +150,10 @@ begin
 						elsif lx /= tx and auxfree(dirx)='1' then PES<=S5;
 						elsif lx = tx and ly /= ty and auxfree(diry)='1' then PES<=S6; 
 						else PES<=S1; end if;
-					else
-						if ((lx /= 0 or lx /= X_ROUTERS)) then	auxfree(dirx)
-						elsif ((ly /= 0 or ly /= Y_ROUTERS)) then auxfree(diry)
+
+					else -- it's on the wrong tier or stack -> GOTO elevator
+						if (lx /= 0 and lx /= X_ROUTERS and auxfree(dirx)='1') then PES<=S5 ; -- ride along x axis
+						elsif (ly /= 0 and ly /= Y_ROUTERS and auxfree(diry)) then PES<=S6 ; -- ride along y axis
 						end if;
 					end if;
 
