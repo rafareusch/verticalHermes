@@ -118,8 +118,8 @@ use work.standards.all;
 -- THE EXTERNAL INTERFACE OF THE NOC ARE THE LOCAL PORTS OF ALL ROUTERS
 --
 entity NOC is
-    generic(    X_ROUTERS: integer := 4;
-    	        Y_ROUTERS: integer := 4;
+    generic(    X_ROUTERS: integer := 3;
+    	        Y_ROUTERS: integer := 3;
                 TIERS: integer := 2;
                 STACKS: integer := 1
                 
