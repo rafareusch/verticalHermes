@@ -92,7 +92,7 @@ package body standards is
                 variable addr           : regflit; 
                 variable aux            : integer;
         begin 
-                aux := (router/X_ROUTERS);
+                aux := (router/X_ROUTERS); 
                 pos_x := conv_std_logic_vector((router mod X_ROUTERS),QUARTOFLIT);
                 pos_y := conv_std_logic_vector(aux,QUARTOFLIT); 
                 ls := conv_std_logic_vector(STACKS,QUARTOFLIT);
@@ -122,10 +122,10 @@ entity NOC is
     	        Y_ROUTERS: integer := 3;
                 TIERS: integer := 2;
                 STACKS: integer := 1
-                
                 );
 
 	port(
+                ------------------------------------ todos sinais devem ser da grandeza (NB_ROUTERS * TIERS -1)
 		clock         : in  std_logic_vector( (X_ROUTERS*Y_ROUTERS-1) downto 0);
 		reset         : in  std_logic;
 
@@ -142,7 +142,8 @@ entity NOC is
 
 architecture NOC of NOC is
 
-    constant NB_ROUTERS : integer :=  X_ROUTERS * Y_ROUTERS;
+        ---------------------------------------------- todos sinais devem ser da grandeza (NB_ROUTERS * TIERS -1)
+        constant NB_ROUTERS : integer :=  X_ROUTERS * Y_ROUTERS;
 
     -- array e sinais para controle - 5 fios de controle por roteador N/S/W/E/L
 	type control_array is array (NB_ROUTERS-1 downto 0) of std_logic_vector(4 downto 0);
@@ -168,7 +169,6 @@ begin
         -- FOR GENERATE FOR EACH TIER
 
         noc: for i in 0 to NB_ROUTERS-1 generate
-           
 
                 router: entity work.RouterCC
                 generic map( address =>  RouterAddress(i,X_ROUTERS,STACKS,TIERS))  -- CONCATENAR ENDEREÇO COM LT LS-- adicionar X_ROUTERS, Y_ROUTERS
@@ -183,9 +183,6 @@ begin
                         tx       => tx(i),
                         data_out => data_out(i),
                         credit_i => credit_i(i));                          
-
-
-		
 		
                 ------------------------------------------------------------------------------
                 --- LOCAL PORT CONNECTIONS ----------------------------------------------------
@@ -199,8 +196,8 @@ begin
                 txLocal(i)               <= tx(i)(LOCAL) ; 
                 data_outLocal(i)         <= data_out(i)(LOCAL);            
                 credit_i(i)(LOCAL)       <= credit_iLocal(i);
-                       
-
+                    
+                
 		-- IF ROUTERS ARE AT EDGE
 		-- USE GROUNDED VIAS TO CONNECT UP AND DOWN CHANNELS
 		
