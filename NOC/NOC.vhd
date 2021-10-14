@@ -49,10 +49,16 @@ package body standards is
         function RouterPosition(router, X_ROUTERS, Y_ROUTERS: integer) return integer is
                 variable pos: integer range 0 to TR;
                 variable line, column: integer;
+                variable RouterTier: integer;
                 begin
                         
+                   
                     column := router mod X_ROUTERS;
-                    
+
+                    RouterTier := router / X_ROUTERS*Y_ROUTERS; -- 0 to n 
+                    router := router - (RouterTier * X_ROUTERS*Y_ROUTERS);
+                        
+
                     if router >= (X_ROUTERS*Y_ROUTERS)-X_ROUTERS then --TOP ---------
                             if column = X_ROUTERS-1 then    --RIGHT
                                     pos := TR;
@@ -61,6 +67,7 @@ package body standards is
                             else                           --CENTER_X
                                     pos := TC;
                             end if;
+                        -- router < X_ROUTERS
                     elsif router < X_ROUTERS then          --BOTTOM--------------
                             if column = X_ROUTERS-1 then   --RIGHT
                                     pos := BR;
@@ -78,7 +85,7 @@ package body standards is
                                     pos := CC;
                             end if;
                     end if; 
-                    
+
                     --report "POS "  & integer'image(pos) & "  " & integer'image(router)  & "  " &  integer'image(X_ROUTERS) & "  " & integer'image(Y_ROUTERS);
                     
                     return pos;
@@ -92,11 +99,15 @@ package body standards is
                 variable addr           : regflit; 
                 variable aux            : integer;
         begin 
+
+                RouterTier := router / X_ROUTERS*Y_ROUTERS; -- 0 to n 
+                router := router - (RouterTier * X_ROUTERS*Y_ROUTERS);
+
                 aux := (router/X_ROUTERS); 
                 pos_x := conv_std_logic_vector((router mod X_ROUTERS),QUARTOFLIT);
                 pos_y := conv_std_logic_vector(aux,QUARTOFLIT); 
                 ls := conv_std_logic_vector(STACKS,QUARTOFLIT);
-                lt :=  conv_std_logic_vector(TIERS,QUARTOFLIT);
+                lt := conv_std_logic_vector(RouterTier,QUARTOFLIT);
                 
                 addr := ls & lt & pos_x & pos_y;
 
@@ -211,13 +222,61 @@ begin
                 ------------------------------------------------------------------------------
                 --- EAST PORT CONNECTIONS ----------------------------------------------------
                 ------------------------------------------------------------------------------
-                east_grounding: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=BR or routerPosition(i,X_ROUTERS,Y_ROUTERS)=CRX or routerPosition(i,X_ROUTERS,Y_ROUTERS)=TR generate
+                -- ALTERADOS
+
+                -- CONEXOES DOS ELEVADORES
+                -- BR E TR
+                --      EAST - DOWN
+                -- BL E TL
+                --      WEST - DOWN
+                -- BR - BL
+                --      SOUTH - UP
+                -- TR or TL
+                --      NORTH - UP
+
+
+                -- 8 EAST - 17 NORTH
+                -- i >= TIER-1 * XRT * YRT -- ULTIMO   
+                -- i < XRT * YRT -- PRIMEIRO TIER
+
+
+                -- First Tier: ground DOWN ports
+                east_grounding: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=TR  and (i < X_ROUTERS*Y_ROUTERS) generate 
                         rx(i)(EAST)             <= '0';
                         clock_rx(i)(EAST)       <= '0';
                         credit_i(i)(EAST)       <= '0';
                         data_in(i)(EAST)        <= (others => '0');
                 end generate;
 
+                -- Connect UP ports of i to DOWN ports of router on top
+                east_UpConnection: if  routerPosition(i,X_ROUTERS,Y_ROUTERS)=TR and (i < (TIERS-1)*X_ROUTERS*Y_ROUTERS) generate -- NOT LAST TIER
+                        rx(i)(NORTH)             <= tx(i+(X_ROUTERS*Y_ROUTERS))(EAST);
+                        clock_rx(i)(NORTH)       <= clock_tx(i+(X_ROUTERS*Y_ROUTERS))(EAST);
+                        credit_i(i)(NORTH)       <= credit_o(i+(X_ROUTERS*Y_ROUTERS))(EAST);
+                        data_in(i)(NORTH)        <= data_out(i+(X_ROUTERS*Y_ROUTERS))(EAST);
+                end generate;
+
+                -- Last Tier: Ground UP ports
+                east_grounding: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=TR  and (i >= (TIERS-1)*X_ROUTERS*Y_ROUTERS) generate -- LAST TIER
+                        rx(i)(NORTH)             <= '0';
+                        clock_rx(i)(NORTH)       <= '0';
+                        credit_i(i)(NORTH)       <= '0';
+                        data_in(i)(NORTH)        <= (others => '0');
+                end generate;
+
+                -- NOT FIRST TIER
+                --  RX(I) - TX(I-(X*Y))
+
+
+                -- NAO IREMOS MDUAR
+                east_grounding: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=CRX generate
+                        rx(i)(EAST)             <= '0';
+                        clock_rx(i)(EAST)       <= '0';
+                        credit_i(i)(EAST)       <= '0';
+                        data_in(i)(EAST)        <= (others => '0');
+                end generate;
+
+                -- NAO IREMOS MDUAR
                 east_connection: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=BL or routerPosition(i,X_ROUTERS,Y_ROUTERS)=CL or routerPosition(i,X_ROUTERS,Y_ROUTERS)=TL  or routerPosition(i,X_ROUTERS,Y_ROUTERS)=BC or routerPosition(i,X_ROUTERS,Y_ROUTERS)= TC or routerPosition(i,X_ROUTERS,Y_ROUTERS)= CC generate
                         rx(i)(EAST)             <= tx(i+1)(WEST);
                         clock_rx(i)(EAST)       <= clock_tx(i+1)(WEST);
@@ -241,6 +300,7 @@ begin
                         credit_i(i)(WEST)       <= credit_o(i-1)(EAST);
                         data_in(i)(WEST)        <= data_out(i-1)(EAST);
                 end generate;
+
 
                 -------------------------------------------------------------------------------
                 --- NORTH PORT CONNECTIONS ----------------------------------------------------
