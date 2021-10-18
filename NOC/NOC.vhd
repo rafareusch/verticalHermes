@@ -367,7 +367,8 @@ begin
                 end generate;
 
                 north_connection: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=BL or routerPosition(i,X_ROUTERS,Y_ROUTERS)=BC or routerPosition(i,X_ROUTERS,Y_ROUTERS)=BR or routerPosition(i,X_ROUTERS,Y_ROUTERS)=CL or routerPosition(i,X_ROUTERS,Y_ROUTERS)=CRX or routerPosition(i,X_ROUTERS,Y_ROUTERS)=CC generate
-                        rx(i)(NORTH)            <= tx(i+100+X_ROUTERS)(SOUTH);
+                        -- i=15 para erro
+                        rx(i)(NORTH)            <= tx(i+X_ROUTERS)(SOUTH);
                         clock_rx(i)(NORTH)      <= clock_tx(i+X_ROUTERS)(SOUTH);
                         credit_i(i)(NORTH)      <= credit_o(i+X_ROUTERS)(SOUTH);
                         data_in(i)(NORTH)       <= data_out(i+X_ROUTERS)(SOUTH);
