@@ -48,8 +48,8 @@ generic( address: regflit);
 port(
     clock:     in  std_logic;
     reset:     in  std_logic;
-    x_routers:  in  regNport;
-    y_routers:  in  regNport;
+    x_routers  in  regNport;
+    y_routers  in  regNport;
     clock_rx:  in  regNport;
     rx:        in  regNport;
     data_in:   in  arrayNport_regflit;

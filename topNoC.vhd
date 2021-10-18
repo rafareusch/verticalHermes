@@ -9,18 +9,20 @@ use work.standards.all;
 
 entity topNoC is
     generic(   X_ROUTERS: integer := 3;
-    	       Y_ROUTERS: integer := 3 );
+    	       Y_ROUTERS: integer := 3;
+               TIERS: integer := 2;
+                STACKS: integer := 1 );
 end;
 
 architecture topNoC of topNoC is
 
-	signal clock : std_logic_vector( (X_ROUTERS*Y_ROUTERS-1) downto 0) := (others=>'0');
+	signal clock : std_logic_vector( (X_ROUTERS*Y_ROUTERS*TIERS-1) downto 0) := (others=>'0');
 	signal reset : std_logic;
-	signal clock_rx, rx, credit_o: std_logic_vector( (X_ROUTERS*Y_ROUTERS-1) downto 0);
-	signal clock_tx, tx, credit_i: std_logic_vector( (X_ROUTERS*Y_ROUTERS-1) downto 0);
-	signal data_in, data_out : arrayNrot_regflit( (X_ROUTERS*Y_ROUTERS-1) downto 0 );
+	signal clock_rx, rx, credit_o: std_logic_vector( (X_ROUTERS*Y_ROUTERS*TIERS-1) downto 0);
+	signal clock_tx, tx, credit_i: std_logic_vector( (X_ROUTERS*Y_ROUTERS*TIERS-1) downto 0);
+	signal data_in, data_out : arrayNrot_regflit( (X_ROUTERS*Y_ROUTERS*TIERS-1) downto 0 );
 
-	constant NB_ROUTERS : integer :=  X_ROUTERS * Y_ROUTERS;
+	constant NB_ROUTERS : integer :=  X_ROUTERS * Y_ROUTERS*TIERS;
 
     --- geração manual dos pacotes
     signal address1, data1:  std_logic_vector(15 downto 0);

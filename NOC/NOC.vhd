@@ -25,7 +25,7 @@ package standards is
     constant TR: integer := 8;
 
     function RouterPosition(router, X_ROUTERS, Y_ROUTERS: integer) return integer;
-    function RouterAddress(router, X_ROUTERS,STACKS,TIERS: integer)  return std_logic_vector; 
+    function RouterAddress(router, X_ROUTERS,Y_ROUTERS, STACKS,TIERS: integer)  return std_logic_vector; 
 
     type arrayNrot_regflit is array (natural range <>) of regflit;
 
@@ -50,16 +50,18 @@ package body standards is
                 variable pos: integer range 0 to TR;
                 variable line, column: integer;
                 variable RouterTier: integer;
+                variable localRouter: integer;
                 begin
                         
                    
-                    column := router mod X_ROUTERS;
-
+                
                     RouterTier := router / X_ROUTERS*Y_ROUTERS; -- 0 to n 
-                    router := router - (RouterTier * X_ROUTERS*Y_ROUTERS);
+                    localRouter := router - (RouterTier * X_ROUTERS*Y_ROUTERS);
+                    
+                    column := localRouter mod X_ROUTERS;
                         
 
-                    if router >= (X_ROUTERS*Y_ROUTERS)-X_ROUTERS then --TOP ---------
+                    if localRouter >= (X_ROUTERS*Y_ROUTERS)-X_ROUTERS then --TOP ---------
                             if column = X_ROUTERS-1 then    --RIGHT
                                     pos := TR;
                             elsif column = 0 then          --LEFT
@@ -68,7 +70,7 @@ package body standards is
                                     pos := TC;
                             end if;
                         -- router < X_ROUTERS
-                    elsif router < X_ROUTERS then          --BOTTOM--------------
+                    elsif localRouter < X_ROUTERS then          --BOTTOM--------------
                             if column = X_ROUTERS-1 then   --RIGHT
                                     pos := BR;
                             elsif column = 0 then          --LEFT
@@ -93,18 +95,20 @@ package body standards is
         end RouterPosition;
 
 	-- ALTERAR PARA USAR A PARTE ALTA DO ADDR PARA ARMAZENAR S E T
-        function RouterAddress(router, X_ROUTERS,STACKS,TIERS: integer) return std_logic_vector is
+        function RouterAddress(router, X_ROUTERS,Y_ROUTERS,STACKS,TIERS: integer) return std_logic_vector is
 
                 variable pos_x,pos_y,ls,lt   : regquartoflit; 
                 variable addr           : regflit; 
                 variable aux            : integer;
+                variable localRouter: integer;
+                variable RouterTier: integer;
         begin 
 
                 RouterTier := router / X_ROUTERS*Y_ROUTERS; -- 0 to n 
-                router := router - (RouterTier * X_ROUTERS*Y_ROUTERS);
+                localRouter := router - (RouterTier * X_ROUTERS*Y_ROUTERS);
 
-                aux := (router/X_ROUTERS); 
-                pos_x := conv_std_logic_vector((router mod X_ROUTERS),QUARTOFLIT);
+                aux := (localRouter/X_ROUTERS); 
+                pos_x := conv_std_logic_vector((localRouter mod X_ROUTERS),QUARTOFLIT);
                 pos_y := conv_std_logic_vector(aux,QUARTOFLIT); 
                 ls := conv_std_logic_vector(STACKS,QUARTOFLIT);
                 lt := conv_std_logic_vector(RouterTier,QUARTOFLIT);
@@ -123,6 +127,7 @@ use IEEE.std_logic_1164.all;
 use IEEE.std_logic_unsigned.all;
 use work.HermesPackage.all;
 use work.standards.all;
+use IEEE.std_logic_arith.all;
 
 
 --
@@ -137,24 +142,24 @@ entity NOC is
 
 	port(
                 ------------------------------------ todos sinais devem ser da grandeza (NB_ROUTERS * TIERS -1)
-		clock         : in  std_logic_vector( (X_ROUTERS*Y_ROUTERS-1) downto 0);
+		clock         : in  std_logic_vector( (X_ROUTERS*Y_ROUTERS*TIERS-1) downto 0);
 		reset         : in  std_logic;
 
-		clock_rxLocal : in  std_logic_vector( (X_ROUTERS*Y_ROUTERS-1) downto 0);
-		rxLocal       : in  std_logic_vector( (X_ROUTERS*Y_ROUTERS-1) downto 0);
-		data_inLocal  : in  arrayNrot_regflit( (X_ROUTERS*Y_ROUTERS-1) downto 0 );
-		credit_oLocal : out std_logic_vector( (X_ROUTERS*Y_ROUTERS-1) downto 0);
+		clock_rxLocal : in  std_logic_vector( (X_ROUTERS*Y_ROUTERS*TIERS-1) downto 0);
+		rxLocal       : in  std_logic_vector( (X_ROUTERS*Y_ROUTERS*TIERS-1) downto 0);
+		data_inLocal  : in  arrayNrot_regflit( (X_ROUTERS*Y_ROUTERS*TIERS-1) downto 0 );
+		credit_oLocal : out std_logic_vector( (X_ROUTERS*Y_ROUTERS*TIERS-1) downto 0);
 
-		clock_txLocal : out std_logic_vector( (X_ROUTERS*Y_ROUTERS-1) downto 0);
-		txLocal       : out std_logic_vector( (X_ROUTERS*Y_ROUTERS-1) downto 0);
-		data_outLocal : out arrayNrot_regflit( (X_ROUTERS*Y_ROUTERS-1) downto 0 );
-		credit_iLocal : in  std_logic_vector( (X_ROUTERS*Y_ROUTERS-1) downto 0));
+		clock_txLocal : out std_logic_vector( (X_ROUTERS*Y_ROUTERS*TIERS-1) downto 0);
+		txLocal       : out std_logic_vector( (X_ROUTERS*Y_ROUTERS*TIERS-1) downto 0);
+		data_outLocal : out arrayNrot_regflit( (X_ROUTERS*Y_ROUTERS*TIERS-1) downto 0 );
+		credit_iLocal : in  std_logic_vector( (X_ROUTERS*Y_ROUTERS*TIERS-1) downto 0));
 	end NOC;
 
 architecture NOC of NOC is
 
         ---------------------------------------------- todos sinais devem ser da grandeza (NB_ROUTERS * TIERS -1)
-        constant NB_ROUTERS : integer :=  X_ROUTERS * Y_ROUTERS;
+        constant NB_ROUTERS : integer :=  X_ROUTERS * Y_ROUTERS * TIERS;
 
     -- array e sinais para controle - 5 fios de controle por roteador N/S/W/E/L
 	type control_array is array (NB_ROUTERS-1 downto 0) of std_logic_vector(4 downto 0);
@@ -170,6 +175,9 @@ architecture NOC of NOC is
 
         signal NocHeader : std_logic_vector((TAM_FLIT-1) downto METADEFLIT);
 
+        signal sX_ROUTERS : regNport  :=  conv_std_logic_vector(X_ROUTERS,NPORT);
+        signal sY_ROUTERS : regNport :=   conv_std_logic_vector(Y_ROUTERS,NPORT);
+
 begin
 
         --NocHeader <= conv_std_logic_vector(STACKS,QUARTOFLIT) & conv_std_logic_vector(TIER,QUARTOFLIT);
@@ -182,18 +190,20 @@ begin
         noc: for i in 0 to NB_ROUTERS-1 generate
 
                 router: entity work.RouterCC
-                generic map( address =>  RouterAddress(i,X_ROUTERS,STACKS,TIERS))  -- CONCATENAR ENDEREÇO COM LT LS-- adicionar X_ROUTERS, Y_ROUTERS
+                generic map( address =>  RouterAddress(i,X_ROUTERS,Y_ROUTERS,STACKS,TIERS))  -- CONCATENAR ENDEREÇO COM LT LS-- adicionar X_ROUTERS, Y_ROUTERS
                 port map(
                         clock    => clock(i),
                         reset    => reset,
                         clock_rx => clock_rx(i),
                         rx       => rx(i),
+                        x_routers => sX_ROUTERS,
+                        y_routers => sY_ROUTERS,
                         data_in  => data_in(i),
                         credit_o => credit_o(i),
                         clock_tx => clock_tx(i),
                         tx       => tx(i),
                         data_out => data_out(i),
-                        credit_i => credit_i(i));                          
+                        credit_i => credit_i(i));         
 		
                 ------------------------------------------------------------------------------
                 --- LOCAL PORT CONNECTIONS ----------------------------------------------------
@@ -219,9 +229,7 @@ begin
                 -- BL (SOUTH: UP   WEST: DOWN)
 
 
-                ------------------------------------------------------------------------------
-                --- EAST PORT CONNECTIONS ----------------------------------------------------
-                ------------------------------------------------------------------------------
+                
                 -- ALTERADOS
 
                 -- CONEXOES DOS ELEVADORES
@@ -240,34 +248,80 @@ begin
                 -- i < XRT * YRT -- PRIMEIRO TIER
 
 
-                -- First Tier: ground DOWN ports
-                east_grounding: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=TR  and (i < X_ROUTERS*Y_ROUTERS) generate 
+                
+                -- ########################### TR/TL/BR ROUTER #####################
+                -- ###########################################################
+                -- FIRST TIER (ground DOWN vias)
+                east_FirstTierGround: if (routerPosition(i,X_ROUTERS,Y_ROUTERS)=BR and routerPosition(i,X_ROUTERS,Y_ROUTERS)=TR) and (i < X_ROUTERS*Y_ROUTERS) generate 
                         rx(i)(EAST)             <= '0';
                         clock_rx(i)(EAST)       <= '0';
                         credit_i(i)(EAST)       <= '0';
                         data_in(i)(EAST)        <= (others => '0');
                 end generate;
 
-                -- Connect UP ports of i to DOWN ports of router on top
-                east_UpConnection: if  routerPosition(i,X_ROUTERS,Y_ROUTERS)=TR and (i < (TIERS-1)*X_ROUTERS*Y_ROUTERS) generate -- NOT LAST TIER
+                -- FIRST_TIER to (LAST_TIER-1) (Connect UP vias)
+                north_UpConnection_1: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=TL and (i < (TIERS-1)*X_ROUTERS*Y_ROUTERS) generate -- NOT LAST TIER
+                        rx(i)(NORTH)             <= tx(i+(X_ROUTERS*Y_ROUTERS))(WEST);
+                        clock_rx(i)(NORTH)       <= clock_tx(i+(X_ROUTERS*Y_ROUTERS))(WEST);
+                        credit_i(i)(NORTH)       <= credit_o(i+(X_ROUTERS*Y_ROUTERS))(WEST);
+                        data_in(i)(NORTH)        <= data_out(i+(X_ROUTERS*Y_ROUTERS))(WEST);
+                        end generate;   
+
+                north_UpConnection_2: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=TR and (i < (TIERS-1)*X_ROUTERS*Y_ROUTERS) generate -- NOT LAST TIER
                         rx(i)(NORTH)             <= tx(i+(X_ROUTERS*Y_ROUTERS))(EAST);
                         clock_rx(i)(NORTH)       <= clock_tx(i+(X_ROUTERS*Y_ROUTERS))(EAST);
                         credit_i(i)(NORTH)       <= credit_o(i+(X_ROUTERS*Y_ROUTERS))(EAST);
                         data_in(i)(NORTH)        <= data_out(i+(X_ROUTERS*Y_ROUTERS))(EAST);
                 end generate;
 
-                -- Last Tier: Ground UP ports
-                east_grounding: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=TR  and (i >= (TIERS-1)*X_ROUTERS*Y_ROUTERS) generate -- LAST TIER
+                -- LAST TIER (ground UP vias)
+                north_LastTierGrounding: if (routerPosition(i,X_ROUTERS,Y_ROUTERS)=TL and routerPosition(i,X_ROUTERS,Y_ROUTERS)=TR) and (i >= (TIERS-1)*X_ROUTERS*Y_ROUTERS) generate -- LAST TIER
                         rx(i)(NORTH)             <= '0';
                         clock_rx(i)(NORTH)       <= '0';
                         credit_i(i)(NORTH)       <= '0';
                         data_in(i)(NORTH)        <= (others => '0');
                 end generate;
 
-                -- NOT FIRST TIER
-                --  RX(I) - TX(I-(X*Y))
+
+                -- ########################### BL/TL/BR ROUTER #####################
+                -- ###########################################################
+                -- FIRST TIER (ground DOWN vias)
+                west_FirstTierGround: if (routerPosition(i,X_ROUTERS,Y_ROUTERS)=BL and routerPosition(i,X_ROUTERS,Y_ROUTERS)=TL) and (i < X_ROUTERS*Y_ROUTERS) generate 
+                        rx(i)(WEST)             <= '0';
+                        clock_rx(i)(WEST)       <= '0';
+                        credit_i(i)(WEST)       <= '0';
+                        data_in(i)(WEST)        <= (others => '0');
+                end generate;
+
+                -- FIRST_TIER to (LAST_TIER-1) (Connect UP vias)
+                south_UpConnection_1: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=BL and (i < (TIERS-1)*X_ROUTERS*Y_ROUTERS) generate -- NOT LAST TIER
+                        rx(i)(SOUTH)             <= tx(i+(X_ROUTERS*Y_ROUTERS))(WEST);
+                        clock_rx(i)(SOUTH)       <= clock_tx(i+(X_ROUTERS*Y_ROUTERS))(WEST);
+                        credit_i(i)(SOUTH)       <= credit_o(i+(X_ROUTERS*Y_ROUTERS))(WEST);
+                        data_in(i)(SOUTH)        <= data_out(i+(X_ROUTERS*Y_ROUTERS))(WEST);
+                end generate;   
+
+                south_UpConnection_2: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=BR and (i < (TIERS-1)*X_ROUTERS*Y_ROUTERS) generate -- NOT LAST TIER
+                        rx(i)(SOUTH)             <= tx(i+(X_ROUTERS*Y_ROUTERS))(EAST);
+                        clock_rx(i)(SOUTH)       <= clock_tx(i+(X_ROUTERS*Y_ROUTERS))(EAST);
+                        credit_i(i)(SOUTH)       <= credit_o(i+(X_ROUTERS*Y_ROUTERS))(EAST);
+                        data_in(i)(SOUTH)        <= data_out(i+(X_ROUTERS*Y_ROUTERS))(EAST);
+                end generate;
+
+                -- LAST TIER (ground UP vias)
+                south_LastTierGrounding: if (routerPosition(i,X_ROUTERS,Y_ROUTERS)=BL and routerPosition(i,X_ROUTERS,Y_ROUTERS)=BR) and (i >= (TIERS-1)*X_ROUTERS*Y_ROUTERS) generate -- LAST TIER
+                        rx(i)(SOUTH)             <= '0';
+                        clock_rx(i)(SOUTH)       <= '0';
+                        credit_i(i)(SOUTH)       <= '0';
+                        data_in(i)(SOUTH)        <= (others => '0');
+                end generate;
 
 
+
+
+                ------------------------------------------------------------------------------
+                --- EAST PORT CONNECTIONS ----------------------------------------------------
+                ------------------------------------------------------------------------------
                 -- NAO IREMOS MDUAR
                 east_grounding: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=CRX generate
                         rx(i)(EAST)             <= '0';
@@ -287,7 +341,7 @@ begin
                 ------------------------------------------------------------------------------
                 --- WEST PORT CONNECTIONS ----------------------------------------------------
                 ------------------------------------------------------------------------------
-                west_grounding: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=BL or routerPosition(i,X_ROUTERS,Y_ROUTERS)=CL or routerPosition(i,X_ROUTERS,Y_ROUTERS)=TL generate
+                west_grounding: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=CL generate
                         rx(i)(WEST)             <= '0';
                         clock_rx(i)(WEST)       <= '0';
                         credit_i(i)(WEST)       <= '0';
@@ -305,7 +359,7 @@ begin
                 -------------------------------------------------------------------------------
                 --- NORTH PORT CONNECTIONS ----------------------------------------------------
                 -------------------------------------------------------------------------------
-                north_grounding: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=TL or routerPosition(i,X_ROUTERS,Y_ROUTERS)=TC or routerPosition(i,X_ROUTERS,Y_ROUTERS)=TR generate
+                north_grounding: if  routerPosition(i,X_ROUTERS,Y_ROUTERS)=TC generate
                         rx(i)(NORTH)            <= '0';
                         clock_rx(i)(NORTH)      <= '0';
                         credit_i(i)(NORTH)      <= '0';
@@ -313,7 +367,7 @@ begin
                 end generate;
 
                 north_connection: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=BL or routerPosition(i,X_ROUTERS,Y_ROUTERS)=BC or routerPosition(i,X_ROUTERS,Y_ROUTERS)=BR or routerPosition(i,X_ROUTERS,Y_ROUTERS)=CL or routerPosition(i,X_ROUTERS,Y_ROUTERS)=CRX or routerPosition(i,X_ROUTERS,Y_ROUTERS)=CC generate
-                        rx(i)(NORTH)            <= tx(i+X_ROUTERS)(SOUTH);
+                        rx(i)(NORTH)            <= tx(i+100+X_ROUTERS)(SOUTH);
                         clock_rx(i)(NORTH)      <= clock_tx(i+X_ROUTERS)(SOUTH);
                         credit_i(i)(NORTH)      <= credit_o(i+X_ROUTERS)(SOUTH);
                         data_in(i)(NORTH)       <= data_out(i+X_ROUTERS)(SOUTH);
@@ -322,7 +376,7 @@ begin
                 --------------------------------------------------------------------------------
                 --- SOUTH PORT CONNECTIONS -----------------------------------------------------
                 ---------------------------------------------------------------------------
-                south_grounding: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=BL or routerPosition(i,X_ROUTERS,Y_ROUTERS)=BC or routerPosition(i,X_ROUTERS,Y_ROUTERS)=BR generate
+                south_grounding: if  routerPosition(i,X_ROUTERS,Y_ROUTERS)=BC generate
                         rx(i)(SOUTH)            <= '0';
                         clock_rx(i)(SOUTH)      <= '0';
                         credit_i(i)(SOUTH)      <= '0';
