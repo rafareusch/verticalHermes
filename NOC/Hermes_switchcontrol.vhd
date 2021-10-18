@@ -13,6 +13,8 @@ port(
 	data :    in  arrayNport_regflit;
 	sender :  in  regNport;
 	free :    out regNport;
+	x_routers:  in  regNport;
+    	y_routers:  in  regNport;
 	mux_in :  out arrayNport_reg3;
 	mux_out : out arrayNport_reg3);
 	
@@ -37,10 +39,14 @@ signal source:  arrayNport_reg3 := (others=> (others=> '0'));
 signal sender_ant: regNport := (others=> '0');
 
 -- REMOVE
-signal X_ROUTERS : integer := 3; 
-SIGNAL Y_ROUTERS: integer := 3;
+signal sX_ROUTERS : integer; 
+SIGNAL sY_ROUTERS: integer; 
 
 begin
+
+	sX_ROUTERS <= conv_integer(x_routers); 
+	sY_ROUTERS <= conv_integer(y_routers); 
+
 
 	ask <= '1' when h(LOCAL)='1' or h(EAST)='1' or h(WEST)='1' or h(NORTH)='1' or h(SOUTH)='1' else '0';
 	incoming <= CONV_VECTOR(sel);

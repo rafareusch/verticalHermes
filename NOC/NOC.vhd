@@ -54,9 +54,9 @@ package body standards is
                 begin
                         
                    
-                
+  
                     RouterTier := router / X_ROUTERS*Y_ROUTERS; -- 0 to n 
-                    localRouter := router - (RouterTier * X_ROUTERS*Y_ROUTERS);
+                    localRouter := router mod (X_ROUTERS*Y_ROUTERS);
                     
                     column := localRouter mod X_ROUTERS;
                         
@@ -104,8 +104,8 @@ package body standards is
                 variable RouterTier: integer;
         begin 
 
+                localRouter := router mod (X_ROUTERS*Y_ROUTERS);
                 RouterTier := router / X_ROUTERS*Y_ROUTERS; -- 0 to n 
-                localRouter := router - (RouterTier * X_ROUTERS*Y_ROUTERS);
 
                 aux := (localRouter/X_ROUTERS); 
                 pos_x := conv_std_logic_vector((localRouter mod X_ROUTERS),QUARTOFLIT);

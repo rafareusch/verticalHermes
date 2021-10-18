@@ -48,8 +48,8 @@ generic( address: regflit);
 port(
     clock:     in  std_logic;
     reset:     in  std_logic;
-    x_routers  in  regNport;
-    y_routers  in  regNport;
+    x_routers:  in  regNport;
+    y_routers:  in  regNport;
     clock_rx:  in  regNport;
     rx:        in  regNport;
     data_in:   in  arrayNport_regflit;
@@ -57,7 +57,8 @@ port(
     clock_tx:  out regNport;
     tx:        out regNport;
     data_out:  out arrayNport_regflit;
-    credit_i:  in  regNport);
+    credit_i:  in  regNport
+    );
 end RouterCC;
 
 architecture RouterCC of RouterCC is
@@ -84,7 +85,8 @@ begin
             sender => sender(i),
             clock_rx => clock_rx(i),
             data_ack => data_ack(i),
-            credit_o => credit_o(i));
+            credit_o => credit_o(i)
+            );
 
     end generate buffers; 
 
@@ -100,7 +102,10 @@ begin
         sender => sender,
         free => free,
         mux_in => mux_in,
-        mux_out => mux_out);
+        mux_out => mux_out,
+        px_routers => x_routers,
+        py_router => y_routers
+	);
 
     CrossBar : Entity work.Hermes_crossbar
     port map(
