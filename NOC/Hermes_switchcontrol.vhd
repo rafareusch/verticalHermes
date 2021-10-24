@@ -100,11 +100,31 @@ begin
 	tx <= header((METADEFLIT - 1) downto QUARTOFLIT) when (lt = tt or ls = ts);
 	ty <= header((QUARTOFLIT - 1) downto 0) 		when (lt = tt or ls = ts);
 
-	dirx <= WEST when (lx > tx and (lt = tt and ls = ts)) or (NOT(lx > ((X_ROUTERS-1)-lx)) and (lt /= tt or ls /= ts)) else 
-			EAST when (lt = tt and ls = ts) or (lx > ((X_ROUTERS-1)-lx) and (lt /= tt or ls /= ts));
 
-	diry <= NORTH when (ly < ty and (lt = tt and ls = ts)) or ((ly > ((Y_ROUTERS-1)-ly)) and (lt /= tt or ls /= ts)) else 
-			SOUTH when (lt = tt and ls = ts) or (NOT(ly > ((Y_ROUTERS-1)-ly)) and (lt /= tt or ls /= ts)); 
+
+
+	dirx <= WEST when (((lx > tx) and (lt = tt and ls = ts)) or -- normal routing
+					  (NOT(lx > ((X_ROUTERS-1)-lx)) and (lt /= tt or ls /= ts)) or   -- go to elevator  if stack or tier dont match
+					  -- 0,0 e 0,y       
+					  ((lx = 0 and ly = 0) and (lt > tt and ls = ts))  or  ((lx = 0 and ly = Y_ROUTERS-1) and (lt > tt and ls = ts))  or -- (right stack) go down      parace ok 
+					  ((lx = 0 and ly = 0) and (ls /= ts))  or  ((lx = 0 and ly = Y_ROUTERS-1) and (ls /= ts))  ) else  -- (wrong stack) go down       parece ok
+					  
+			EAST when ((lx <= tx and lt = tt and ls = ts) or -- normal routing
+					  (lx > ((X_ROUTERS-1)-lx) and (lt /= tt or ls /= ts)) or
+					  -- x,0 e x,y
+					  ((ly = 0 and lx = X_ROUTERS-1) and (lt > tt and ls = ts)) or  ((lx = X_ROUTERS-1 and ly = Y_ROUTERS-1) and (lt > tt or ls = ts)) or    -- go down    parece ok
+					  ((ly = 0 and lx = X_ROUTERS-1) and (ls /= ts)) or  ((lx = X_ROUTERS-1 and ly = Y_ROUTERS-1) and (ls /= ts))	);  -- (wrong stack) go down       parece ok
+
+	diry <= NORTH when ((ly < ty and (lt = tt and ls = ts)) or
+					   ((ly > ((Y_ROUTERS-1)-ly)) and (lt /= tt or ls /= ts)) or
+					   ((lx = 0 and ly = Y_ROUTERS-1) and (lt < tt and ls = ts)) or ((lx = X_ROUTERS-1 and ly = Y_ROUTERS-1) and (lt < tt and ls = ts)) ) else 
+			
+			
+			SOUTH when ((ly >= ty and lt = tt and ls = ts) or
+					   (NOT(ly > ((Y_ROUTERS-1)-ly)) and (lt /= tt or ls /= ts)) or
+					   ((lx = 0 and ly = 0) and (lt < tt and ls = ts)) or (lx = X_ROUTERS-1 and ly = 0) and (lt < tt or ls = ts) ); 
+
+
 
 	process(reset,clock)
 	begin

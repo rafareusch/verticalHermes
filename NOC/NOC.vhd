@@ -100,8 +100,8 @@ package body standards is
                 variable pos_x,pos_y,ls,lt   : regquartoflit; 
                 variable addr           : regflit; 
                 variable aux            : integer;
-                variable localRouter: integer;
-                variable RouterTier: integer;
+                variable localRouter : integer;
+                variable RouterTier : integer;
         begin 
 
                 localRouter := router mod (X_ROUTERS*Y_ROUTERS);
@@ -178,13 +178,22 @@ architecture NOC of NOC is
         signal sX_ROUTERS : regNport  :=  conv_std_logic_vector(X_ROUTERS,NPORT);
         signal sY_ROUTERS : regNport :=   conv_std_logic_vector(Y_ROUTERS,NPORT);
 
+        signal address_router1 : regflit := RouterAddress(0,X_ROUTERS,Y_ROUTERS,STACKS,TIERS);
+        signal address_router2 : regflit := RouterAddress(8,X_ROUTERS,Y_ROUTERS,STACKS,TIERS);
+        signal address_router3 : regflit := RouterAddress(17,X_ROUTERS,Y_ROUTERS,STACKS,TIERS);
+        
+
+        signal localRouterInt : integer := 17 mod (X_ROUTERS*Y_ROUTERS);
+        signal RouterTierInt : integer := 17 / (X_ROUTERS*Y_ROUTERS); 
+        
+              
+
 begin
 
         --NocHeader <= conv_std_logic_vector(STACKS,QUARTOFLIT) & conv_std_logic_vector(TIER,QUARTOFLIT);
                 -- NB_ROUTERS = 25
                 -- NB_TIERS
                 -- Pos(NB_TIERS,NB_ROUTERS)
-
         -- FOR GENERATE FOR EACH TIER
 
         noc: for i in 0 to NB_ROUTERS-1 generate
@@ -228,8 +237,6 @@ begin
                 -- TL (NORTH: UP   WEST: DOWN)
                 -- BL (SOUTH: UP   WEST: DOWN)
 
-
-                
                 -- ALTERADOS
 
                 -- CONEXOES DOS ELEVADORES
@@ -242,13 +249,11 @@ begin
                 -- TR or TL
                 --      NORTH - UP
 
-
                 -- 8 EAST - 17 NORTH
                 -- i >= TIER-1 * XRT * YRT -- ULTIMO   
                 -- i < XRT * YRT -- PRIMEIRO TIER
 
 
-                
                 -- ########################### TR/TL/BR ROUTER #####################
                 -- ###########################################################
                 -- FIRST TIER (ground DOWN vias)
