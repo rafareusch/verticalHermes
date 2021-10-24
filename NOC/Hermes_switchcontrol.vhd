@@ -118,11 +118,9 @@ begin
 	diry <= NORTH when ((ly < ty and (lt = tt and ls = ts)) or
 					   ((ly > ((Y_ROUTERS-1)-ly)) and (lt /= tt or ls /= ts)) or
 					   ((lx = 0 and ly = Y_ROUTERS-1) and (lt < tt and ls = ts)) or ((lx = X_ROUTERS-1 and ly = Y_ROUTERS-1) and (lt < tt and ls = ts)) ) else 
-			
-			
 			SOUTH when ((ly >= ty and lt = tt and ls = ts) or
-					   (NOT(ly > ((Y_ROUTERS-1)-ly)) and (lt /= tt or ls /= ts)) or
-					   ((lx = 0 and ly = 0) and (lt < tt and ls = ts)) or (lx = X_ROUTERS-1 and ly = 0) and (lt < tt or ls = ts) ); 
+					   (NOT(ly > ((Y_ROUTERS-1)-ly)) and (lt /= tt or ls /= ts))  or
+					   (lx = 0 and ly = 0 and lt < tt and ls = ts) or ((lx = X_ROUTERS-1 and ly = 0) and (lt < tt or ls = ts)) ); 
 
 
 
