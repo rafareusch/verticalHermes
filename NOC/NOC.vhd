@@ -136,7 +136,7 @@ use IEEE.std_logic_arith.all;
 entity NOC is
     generic(    X_ROUTERS: integer := 3;
     	        Y_ROUTERS: integer := 3;
-                TIERS: integer := 2;
+                TIERS: integer := 3;
                 STACKS: integer := 1
                 );
 
@@ -257,7 +257,7 @@ begin
                 -- ########################### TR/TL/BR ROUTER #####################
                 -- ###########################################################
                 -- FIRST TIER (ground DOWN vias)
-                east_FirstTierGround: if (routerPosition(i,X_ROUTERS,Y_ROUTERS)=BR and routerPosition(i,X_ROUTERS,Y_ROUTERS)=TR) and (i < X_ROUTERS*Y_ROUTERS) generate 
+                east_FirstTierGround: if (routerPosition(i,X_ROUTERS,Y_ROUTERS)=BR or routerPosition(i,X_ROUTERS,Y_ROUTERS)=TR) and (i < X_ROUTERS*Y_ROUTERS) generate 
                         rx(i)(EAST)             <= '0';
                         clock_rx(i)(EAST)       <= '0';
                         credit_i(i)(EAST)       <= '0';
@@ -280,7 +280,7 @@ begin
                 end generate;
 
                 -- LAST TIER (ground UP vias)
-                north_LastTierGrounding: if (routerPosition(i,X_ROUTERS,Y_ROUTERS)=TL and routerPosition(i,X_ROUTERS,Y_ROUTERS)=TR) and (i >= (TIERS-1)*X_ROUTERS*Y_ROUTERS) generate -- LAST TIER
+                north_LastTierGrounding: if (routerPosition(i,X_ROUTERS,Y_ROUTERS)=TL or routerPosition(i,X_ROUTERS,Y_ROUTERS)=TR) and (i >= (TIERS-1)*X_ROUTERS*Y_ROUTERS) generate -- LAST TIER
                         rx(i)(NORTH)             <= '0';
                         clock_rx(i)(NORTH)       <= '0';
                         credit_i(i)(NORTH)       <= '0';
@@ -291,7 +291,7 @@ begin
                 -- ########################### BL/TL/BR ROUTER #####################
                 -- ###########################################################
                 -- FIRST TIER (ground DOWN vias)
-                west_FirstTierGround: if (routerPosition(i,X_ROUTERS,Y_ROUTERS)=BL and routerPosition(i,X_ROUTERS,Y_ROUTERS)=TL) and (i < X_ROUTERS*Y_ROUTERS) generate 
+                west_FirstTierGround: if (routerPosition(i,X_ROUTERS,Y_ROUTERS)=BL or routerPosition(i,X_ROUTERS,Y_ROUTERS)=TL) and (i < X_ROUTERS*Y_ROUTERS) generate 
                         rx(i)(WEST)             <= '0';
                         clock_rx(i)(WEST)       <= '0';
                         credit_i(i)(WEST)       <= '0';
@@ -314,7 +314,7 @@ begin
                 end generate;
 
                 -- LAST TIER (ground UP vias)
-                south_LastTierGrounding: if (routerPosition(i,X_ROUTERS,Y_ROUTERS)=BL and routerPosition(i,X_ROUTERS,Y_ROUTERS)=BR) and (i >= (TIERS-1)*X_ROUTERS*Y_ROUTERS) generate -- LAST TIER
+                south_LastTierGrounding: if (routerPosition(i,X_ROUTERS,Y_ROUTERS)=BL or routerPosition(i,X_ROUTERS,Y_ROUTERS)=BR) and (i >= (TIERS-1)*X_ROUTERS*Y_ROUTERS) generate -- LAST TIER
                         rx(i)(SOUTH)             <= '0';
                         clock_rx(i)(SOUTH)       <= '0';
                         credit_i(i)(SOUTH)       <= '0';

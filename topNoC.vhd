@@ -10,7 +10,7 @@ use work.standards.all;
 entity topNoC is
     generic(   X_ROUTERS: integer := 3;
     	       Y_ROUTERS: integer := 3;
-               TIERS: integer := 2;
+               TIERS: integer := 3;
                 STACKS: integer := 1 );
 end;
 
