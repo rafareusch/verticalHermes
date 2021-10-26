@@ -54,7 +54,7 @@ package body standards is
                 begin
                         
                    
-  
+                    --Tem q ser mod no lugar de "/"
                     RouterTier := router / X_ROUTERS*Y_ROUTERS; -- 0 to n 
                     localRouter := router mod (X_ROUTERS*Y_ROUTERS);
                     
