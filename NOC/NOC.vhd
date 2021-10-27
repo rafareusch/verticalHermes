@@ -54,13 +54,9 @@ package body standards is
                 begin
                         
                    
-                    --Tem q ser mod no lugar de "/"
-                    RouterTier := router / X_ROUTERS*Y_ROUTERS; -- 0 to n 
                     localRouter := router mod (X_ROUTERS*Y_ROUTERS);
-                    
                     column := localRouter mod X_ROUTERS;
                         
-
                     if localRouter >= (X_ROUTERS*Y_ROUTERS)-X_ROUTERS then --TOP ---------
                             if column = X_ROUTERS-1 then    --RIGHT
                                     pos := TR;
@@ -87,9 +83,7 @@ package body standards is
                                     pos := CC;
                             end if;
                     end if; 
-
                     --report "POS "  & integer'image(pos) & "  " & integer'image(router)  & "  " &  integer'image(X_ROUTERS) & "  " & integer'image(Y_ROUTERS);
-                    
                     return pos;
                         
         end RouterPosition;
@@ -97,15 +91,15 @@ package body standards is
 	-- ALTERAR PARA USAR A PARTE ALTA DO ADDR PARA ARMAZENAR S E T
         function RouterAddress(router, X_ROUTERS,Y_ROUTERS,STACKS,TIERS: integer) return std_logic_vector is
 
-                variable pos_x,pos_y,ls,lt   : regquartoflit; 
-                variable addr           : regflit; 
-                variable aux            : integer;
-                variable localRouter : integer;
-                variable RouterTier : integer;
+                variable pos_x,pos_y,ls,lt  : regquartoflit; 
+                variable addr               : regflit; 
+                variable aux                : integer;
+                variable localRouter        : integer;
+                variable RouterTier         : integer;
         begin 
 
                 localRouter := router mod (X_ROUTERS*Y_ROUTERS);
-                RouterTier := router / X_ROUTERS*Y_ROUTERS; -- 0 to n 
+                RouterTier := router / (X_ROUTERS*Y_ROUTERS); -- 0 to n 
 
                 aux := (localRouter/X_ROUTERS); 
                 pos_x := conv_std_logic_vector((localRouter mod X_ROUTERS),QUARTOFLIT);
@@ -177,18 +171,41 @@ architecture NOC of NOC is
 
         signal sX_ROUTERS : regNport  :=  conv_std_logic_vector(X_ROUTERS,NPORT);
         signal sY_ROUTERS : regNport :=   conv_std_logic_vector(Y_ROUTERS,NPORT);
-
+                                         -- ls lt x y
         signal address_router1 : regflit := RouterAddress(0,X_ROUTERS,Y_ROUTERS,STACKS,TIERS);
         signal address_router2 : regflit := RouterAddress(8,X_ROUTERS,Y_ROUTERS,STACKS,TIERS);
         signal address_router3 : regflit := RouterAddress(17,X_ROUTERS,Y_ROUTERS,STACKS,TIERS);
         
-
         signal localRouterInt : integer := 17 mod (X_ROUTERS*Y_ROUTERS);
-        signal RouterTierInt : integer := 17 / (X_ROUTERS*Y_ROUTERS); 
-        
-              
+        signal localRouterInt2 : integer := 0 mod (X_ROUTERS*Y_ROUTERS);
+        signal RouterTierInt : regflit := conv_std_logic_vector(TIERS,QUARTOFLIT) & conv_std_logic_vector(TIERS,QUARTOFLIT) & conv_std_logic_vector(TIERS,QUARTOFLIT) & conv_std_logic_vector(TIERS,QUARTOFLIT) ;
 
 begin
+
+
+
+        -- process(clock)
+        
+        -- variable pos_x,pos_y,ls,lt  : regquartoflit; 
+        -- variable addr               : regflit; 
+        -- variable aux                : integer;
+        -- variable localRouter        : integer;
+        -- variable RouterTier         : integer;
+        -- variable router             : integer;
+        -- begin 
+        --         router := 25;
+        --         localRouter := router mod (X_ROUTERS*Y_ROUTERS);
+        --         RouterTier := router / (X_ROUTERS*Y_ROUTERS); -- 0 to n 
+
+        --         aux := (localRouter/X_ROUTERS); 
+        --         pos_x := conv_std_logic_vector((localRouter mod X_ROUTERS),QUARTOFLIT);
+        --         pos_y := conv_std_logic_vector(aux,QUARTOFLIT); 
+        --         ls := conv_std_logic_vector(STACKS,QUARTOFLIT);
+        --         lt := conv_std_logic_vector(RouterTier,QUARTOFLIT);
+                
+        --         addr := ls & lt & pos_x & pos_y;
+
+	-- end process;
 
         --NocHeader <= conv_std_logic_vector(STACKS,QUARTOFLIT) & conv_std_logic_vector(TIER,QUARTOFLIT);
                 -- NB_ROUTERS = 25
