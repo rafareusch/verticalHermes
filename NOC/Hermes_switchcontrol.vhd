@@ -47,7 +47,6 @@ begin
 	sX_ROUTERS <= conv_integer(x_routers); 
 	sY_ROUTERS <= conv_integer(y_routers); 
 
-
 	ask <= '1' when h(LOCAL)='1' or h(EAST)='1' or h(WEST)='1' or h(NORTH)='1' or h(SOUTH)='1' else '0';
 	incoming <= CONV_VECTOR(sel);
 	header <= data(CONV_INTEGER(incoming));
@@ -169,8 +168,7 @@ begin
 			when S2 => PES <= S3;
 
 			when S3 => 
-				
-					if  (lt = tt and ls = ts) then
+					if  (lt = tt and ls = ts) then -- normal routing
 						if lx = tx and ly = ty and auxfree(LOCAL)='1' then PES<=S4;
 						elsif lx /= tx and auxfree(dirx)='1' then PES<=S5;
 						elsif lx = tx and ly /= ty and auxfree(diry)='1' then PES<=S6; 
@@ -179,6 +177,8 @@ begin
 					else -- it's on the wrong tier or stack -> GOTO elevator
 						if (lx /= 0 and lx /= X_ROUTERS and auxfree(dirx)='1') then PES<=S5 ; -- ride along x axis
 						elsif (ly /= 0 and ly /= Y_ROUTERS and auxfree(diry)='1') then PES<=S6 ; -- ride along y axis
+						elsif ((tt > lt) and (ly = 0 or ly = Y_ROUTERS) and auxfree(diry)='1') then  PES<=S6; --  GO UP
+						elsif ((tt < lt) AND (lx = 0 or lx = X_ROUTERS) and auxfree(dirx)='1') then PES<=S5 ; -- GO DOWN 
 						end if;
 					end if;
 
