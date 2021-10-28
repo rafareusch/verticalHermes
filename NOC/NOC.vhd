@@ -270,16 +270,7 @@ begin
                         clock_rx(i)(NORTH)       <= clock_tx(i+(X_ROUTERS*Y_ROUTERS))(WEST);
                         credit_i(i)(NORTH)       <= credit_o(i+(X_ROUTERS*Y_ROUTERS))(WEST);
                         data_in(i)(NORTH)        <= data_out(i+(X_ROUTERS*Y_ROUTERS))(WEST);
-                end generate;
-                
-                -- Não teria q inserir isso?
-                -- FIRST_TIER to (LAST_TIER-1) (Connect UP vias)
-                --north_UpConnection_1: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=TL and (i < (TIERS-1)*X_ROUTERS*Y_ROUTERS) generate -- NOT LAST TIER
-                --        rx(i)(WEST)             <= tx(i-(X_ROUTERS*Y_ROUTERS))(NORTH);
-                --        clock_rx(i)(WEST)       <= clock_tx(i-(X_ROUTERS*Y_ROUTERS))(NORTH);
-                --        credit_i(i)(WEST)       <= credit_o(i-(X_ROUTERS*Y_ROUTERS))(NORTH);
-                --        data_in(i)(WEST)        <= data_out(i-(X_ROUTERS*Y_ROUTERS))(NORTH);
-                --end generate;   
+                        end generate;   
 
                 north_UpConnection_2: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=TR and (i < (TIERS-1)*X_ROUTERS*Y_ROUTERS) generate -- NOT LAST TIER
                         rx(i)(NORTH)             <= tx(i+(X_ROUTERS*Y_ROUTERS))(EAST);
