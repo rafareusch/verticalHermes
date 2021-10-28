@@ -264,14 +264,29 @@ begin
                         clock_rx(i)(NORTH)       <= clock_tx(i+(X_ROUTERS*Y_ROUTERS))(WEST);
                         credit_i(i)(NORTH)       <= credit_o(i+(X_ROUTERS*Y_ROUTERS))(WEST);
                         data_in(i)(NORTH)        <= data_out(i+(X_ROUTERS*Y_ROUTERS))(WEST);
-                        end generate;   
-
+                        end generate;  
                 north_UpConnection_2: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=TR and (i < (TIERS-1)*X_ROUTERS*Y_ROUTERS) generate -- NOT LAST TIER
                         rx(i)(NORTH)             <= tx(i+(X_ROUTERS*Y_ROUTERS))(EAST);
                         clock_rx(i)(NORTH)       <= clock_tx(i+(X_ROUTERS*Y_ROUTERS))(EAST);
                         credit_i(i)(NORTH)       <= credit_o(i+(X_ROUTERS*Y_ROUTERS))(EAST);
                         data_in(i)(NORTH)        <= data_out(i+(X_ROUTERS*Y_ROUTERS))(EAST);
                 end generate;
+
+                --FIRST_TIER+1 TO LAST_TIER
+                westDown_Connection_1: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=TL and (i > X_ROUTERS*Y_ROUTERS) generate 
+                        rx(i)(WEST)              <= tx(i-(X_ROUTERS*Y_ROUTERS))(NORTH);
+                        clock_rx(i)(WEST)       <= clock_tx(i-(X_ROUTERS*Y_ROUTERS))(NORTH);
+                        credit_i(i)(WEST)       <= credit_o(i-(X_ROUTERS*Y_ROUTERS))(NORTH);
+                        data_in(i)(WEST)        <= data_out(i-(X_ROUTERS*Y_ROUTERS))(NORTH);
+                end generate;
+                eastDown_Connection_1: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=TR and (i > X_ROUTERS*Y_ROUTERS) generate 
+                        rx(i)(EAST)              <= tx(i-(X_ROUTERS*Y_ROUTERS))(NORTH);
+                        clock_rx(i)(EAST)       <= clock_tx(i-(X_ROUTERS*Y_ROUTERS))(NORTH);
+                        credit_i(i)(EAST)       <= credit_o(i-(X_ROUTERS*Y_ROUTERS))(NORTH);
+                        data_in(i)(EAST)        <= data_out(i-(X_ROUTERS*Y_ROUTERS))(NORTH);
+                end generate;    
+
+              
 
                 -- LAST TIER (ground UP vias)
                 north_LastTierGrounding: if (routerPosition(i,X_ROUTERS,Y_ROUTERS)=TL or routerPosition(i,X_ROUTERS,Y_ROUTERS)=TR) and (i >= (TIERS-1)*X_ROUTERS*Y_ROUTERS) generate -- LAST TIER
@@ -299,13 +314,29 @@ begin
                         credit_i(i)(SOUTH)       <= credit_o(i+(X_ROUTERS*Y_ROUTERS))(WEST);
                         data_in(i)(SOUTH)        <= data_out(i+(X_ROUTERS*Y_ROUTERS))(WEST);
                 end generate;   
-
                 south_UpConnection_2: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=BR and (i < (TIERS-1)*X_ROUTERS*Y_ROUTERS) generate -- NOT LAST TIER
                         rx(i)(SOUTH)             <= tx(i+(X_ROUTERS*Y_ROUTERS))(EAST);
                         clock_rx(i)(SOUTH)       <= clock_tx(i+(X_ROUTERS*Y_ROUTERS))(EAST);
                         credit_i(i)(SOUTH)       <= credit_o(i+(X_ROUTERS*Y_ROUTERS))(EAST);
                         data_in(i)(SOUTH)        <= data_out(i+(X_ROUTERS*Y_ROUTERS))(EAST);
                 end generate;
+
+                --FIRST_TIER+1 TO LAST_TIER
+                west_DownConnection_1: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=BL and (i > X_ROUTERS*Y_ROUTERS) generate 
+                        rx(i)(WEST)             <= tx(i-(X_ROUTERS*Y_ROUTERS))(SOUTH);
+                        clock_rx(i)(WEST)       <= clock_tx(i-(X_ROUTERS*Y_ROUTERS))(SOUTH);
+                        credit_i(i)(WEST)       <= credit_o(i-(X_ROUTERS*Y_ROUTERS))(SOUTH);
+                        data_in(i)(WEST)        <= data_out(i-(X_ROUTERS*Y_ROUTERS))(SOUTH);
+                end generate;   
+                east_DownConnection_1: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=BR and (i > X_ROUTERS*Y_ROUTERS) generate 
+                        rx(i)(EAST)             <= tx(i-(X_ROUTERS*Y_ROUTERS))(SOUTH);
+                        clock_rx(i)(EAST)       <= clock_tx(i-(X_ROUTERS*Y_ROUTERS))(SOUTH);
+                        credit_i(i)(EAST)       <= credit_o(i-(X_ROUTERS*Y_ROUTERS))(SOUTH);
+                        data_in(i)(EAST)        <= data_out(i-(X_ROUTERS*Y_ROUTERS))(SOUTH);
+                end generate; 
+
+
+              
 
                 -- LAST TIER (ground UP vias)
                 south_LastTierGrounding: if (routerPosition(i,X_ROUTERS,Y_ROUTERS)=BL or routerPosition(i,X_ROUTERS,Y_ROUTERS)=BR) and (i >= (TIERS-1)*X_ROUTERS*Y_ROUTERS) generate -- LAST TIER
@@ -366,7 +397,6 @@ begin
                 end generate;
 
                 north_connection: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=BL or routerPosition(i,X_ROUTERS,Y_ROUTERS)=BC or routerPosition(i,X_ROUTERS,Y_ROUTERS)=BR or routerPosition(i,X_ROUTERS,Y_ROUTERS)=CL or routerPosition(i,X_ROUTERS,Y_ROUTERS)=CRX or routerPosition(i,X_ROUTERS,Y_ROUTERS)=CC generate
-                        -- i=15 para erro
                         rx(i)(NORTH)            <= tx(i+X_ROUTERS)(SOUTH);
                         clock_rx(i)(NORTH)      <= clock_tx(i+X_ROUTERS)(SOUTH);
                         credit_i(i)(NORTH)      <= credit_o(i+X_ROUTERS)(SOUTH);

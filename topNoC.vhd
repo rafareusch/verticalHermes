@@ -112,6 +112,8 @@ begin
                    wait for 20 ns;
             end if;  
         end loop;
+
+        wait for 400000 ns;
       end process;
 
 end topNoC;
