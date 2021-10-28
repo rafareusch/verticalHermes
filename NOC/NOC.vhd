@@ -184,30 +184,7 @@ begin
 
 
 
-        -- process(clock)
-        
-        -- variable pos_x,pos_y,ls,lt  : regquartoflit; 
-        -- variable addr               : regflit; 
-        -- variable aux                : integer;
-        -- variable localRouter        : integer;
-        -- variable RouterTier         : integer;
-        -- variable router             : integer;
-        -- begin 
-        --         router := 25;
-        --         localRouter := router mod (X_ROUTERS*Y_ROUTERS);
-        --         RouterTier := router / (X_ROUTERS*Y_ROUTERS); -- 0 to n 
-
-        --         aux := (localRouter/X_ROUTERS); 
-        --         pos_x := conv_std_logic_vector((localRouter mod X_ROUTERS),QUARTOFLIT);
-        --         pos_y := conv_std_logic_vector(aux,QUARTOFLIT); 
-        --         ls := conv_std_logic_vector(STACKS,QUARTOFLIT);
-        --         lt := conv_std_logic_vector(RouterTier,QUARTOFLIT);
-                
-        --         addr := ls & lt & pos_x & pos_y;
-
-	-- end process;
-
-        --NocHeader <= conv_std_logic_vector(STACKS,QUARTOFLIT) & conv_std_logic_vector(TIER,QUARTOFLIT);
+        	--NocHeader <= conv_std_logic_vector(STACKS,QUARTOFLIT) & conv_std_logic_vector(TIER,QUARTOFLIT);
                 -- NB_ROUTERS = 25
                 -- NB_TIERS
                 -- Pos(NB_TIERS,NB_ROUTERS)
