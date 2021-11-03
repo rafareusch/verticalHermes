@@ -177,8 +177,8 @@ begin
 					else -- it's on the wrong tier or stack -> GOTO elevator
 						if (lx /= 0 and lx /= X_ROUTERS and auxfree(dirx)='1') then PES<=S5 ; -- ride along x axis
 						elsif (ly /= 0 and ly /= Y_ROUTERS and auxfree(diry)='1') then PES<=S6 ; -- ride along y axis
-						elsif ((tt > lt) and (ly = 0 or ly = Y_ROUTERS) and auxfree(diry)='1') then  PES<=S6; --  GO UP
-						elsif ((tt < lt) AND (lx = 0 or lx = X_ROUTERS) and auxfree(dirx)='1') then PES<=S5 ; -- GO DOWN 
+						elsif ((tt > lt) and (ly = 0 or ly = Y_ROUTERS) and (ly = 0 or ly = Y_ROUTERS) and auxfree(diry)='1') then  PES<=S6; --  GO UP
+						elsif ((tt < lt) AND (lx = 0 or lx = X_ROUTERS) and (ly = 0 or ly = Y_ROUTERS) and auxfree(dirx)='1') then  PES<=S5 ; -- GO DOWN 
 						end if;
 					end if;
 
