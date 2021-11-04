@@ -273,14 +273,14 @@ begin
                 end generate;
 
                 --FIRST_TIER+1 TO LAST_TIER
-                westDown_Connection_1: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=TL and (i > X_ROUTERS*Y_ROUTERS) generate 
-                        rx(i)(WEST)              <= tx(i-(X_ROUTERS*Y_ROUTERS))(NORTH);
+                westDown_Connection_1: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=TL and (i >= X_ROUTERS*Y_ROUTERS) generate 
+                        rx(i)(WEST)             <= tx(i-(X_ROUTERS*Y_ROUTERS))(NORTH);
                         clock_rx(i)(WEST)       <= clock_tx(i-(X_ROUTERS*Y_ROUTERS))(NORTH);
                         credit_i(i)(WEST)       <= credit_o(i-(X_ROUTERS*Y_ROUTERS))(NORTH);
                         data_in(i)(WEST)        <= data_out(i-(X_ROUTERS*Y_ROUTERS))(NORTH);
                 end generate;
-                eastDown_Connection_1: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=TR and (i > X_ROUTERS*Y_ROUTERS) generate 
-                        rx(i)(EAST)              <= tx(i-(X_ROUTERS*Y_ROUTERS))(NORTH);
+                eastDown_Connection_1: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=TR and (i >= X_ROUTERS*Y_ROUTERS) generate 
+                        rx(i)(EAST)             <= tx(i-(X_ROUTERS*Y_ROUTERS))(NORTH);
                         clock_rx(i)(EAST)       <= clock_tx(i-(X_ROUTERS*Y_ROUTERS))(NORTH);
                         credit_i(i)(EAST)       <= credit_o(i-(X_ROUTERS*Y_ROUTERS))(NORTH);
                         data_in(i)(EAST)        <= data_out(i-(X_ROUTERS*Y_ROUTERS))(NORTH);
@@ -322,13 +322,13 @@ begin
                 end generate;
 
                 --FIRST_TIER+1 TO LAST_TIER
-                west_DownConnection_1: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=BL and (i > X_ROUTERS*Y_ROUTERS) generate 
+                west_DownConnection_1: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=BL and (i >= X_ROUTERS*Y_ROUTERS) generate 
                         rx(i)(WEST)             <= tx(i-(X_ROUTERS*Y_ROUTERS))(SOUTH);
                         clock_rx(i)(WEST)       <= clock_tx(i-(X_ROUTERS*Y_ROUTERS))(SOUTH);
                         credit_i(i)(WEST)       <= credit_o(i-(X_ROUTERS*Y_ROUTERS))(SOUTH);
                         data_in(i)(WEST)        <= data_out(i-(X_ROUTERS*Y_ROUTERS))(SOUTH);
                 end generate;   
-                east_DownConnection_1: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=BR and (i > X_ROUTERS*Y_ROUTERS) generate 
+                east_DownConnection_1: if routerPosition(i,X_ROUTERS,Y_ROUTERS)=BR and (i >= X_ROUTERS*Y_ROUTERS) generate 
                         rx(i)(EAST)             <= tx(i-(X_ROUTERS*Y_ROUTERS))(SOUTH);
                         clock_rx(i)(EAST)       <= clock_tx(i-(X_ROUTERS*Y_ROUTERS))(SOUTH);
                         credit_i(i)(EAST)       <= credit_o(i-(X_ROUTERS*Y_ROUTERS))(SOUTH);
